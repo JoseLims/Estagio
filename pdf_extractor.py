@@ -2,14 +2,26 @@ import sys
 import os
 import PyPDF2
 
-def extract(file_path):
+def extract(source):
     try:
-        with open(file_path, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
-            text = ''
-            for page in reader.pages:
-                text += page.extract_text() + '\n'
-            return text.strip()
+        # Se for string (caminho), abre arquivo
+        if isinstance(source, str):
+            file_obj = open(source, 'rb')
+        else:
+            # Se for objeto file-like (como de Flask), usa diretamente
+            file_obj = source
+
+        reader = PyPDF2.PdfReader(file_obj)
+        text = ''
+        for page in reader.pages:
+            text += page.extract_text() + '\n'
+        result = text.strip()
+
+        # Fecha arquivo apenas se abrimos nós mesmos
+        if isinstance(source, str):
+            file_obj.close()
+
+        return result
     except Exception as e:
         raise ValueError(f"Erro ao ler o PDF: {str(e)}")
 
